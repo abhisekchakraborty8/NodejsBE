@@ -20,7 +20,7 @@ var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = config.secretKey;
 
-exports.jwtPassport = passport.use(new JwtStrategy(opts, 
+exports.jwtPassport = passport.use('jwt' ,new JwtStrategy(opts, 
     (jwt_payload, done) => {
         console.log('JWT payload ', jwt_payload);
         User.findOne({_id: jwt_payload._id}, (err, user) => {
@@ -36,4 +36,24 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
         });
     }));
 
+exports.jwtadminpassport = passport.use('admin' ,new JwtStrategy(opts, 
+        (jwt_payload, done) => {
+            console.log('JWT payload  checking admin', jwt_payload);
+            User.findOne({_id: jwt_payload._id}, (err, user) => {
+                if (err) {
+                    return done(err, false);
+                }
+                else if (user) {
+                    console.log('user check', user.admin);
+                    return done(null, user.admin);
+                }
+                else {
+                    return done(null, false);
+                }
+            });
+        }));
+
+
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+
+exports.verifyAdmin = passport.authenticate('admin', {session: false});
